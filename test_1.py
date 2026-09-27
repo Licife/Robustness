@@ -8,6 +8,7 @@
 
 import os
 import math
+import csv
 import cv2
 import numpy as np
 import torch
@@ -78,6 +79,45 @@ def tensor_to_img(x):
     x = torch.clamp(x, 0, 1)
     x = x.detach().cpu().numpy().transpose(0, 2, 3, 1)
     return (x * 255).astype(np.uint8)
+
+
+def save_and_print_metrics(cover_steg, results, attacks):
+    """Average per-image scores, then print and save the same summary."""
+    metrics = ("PSNR_Y", "SSIM_Y", "RMSE", "MAE")
+    groups = [("Cover-Stego", cover_steg)] + [
+        (f"Secret-Recovery-{attack}", results[attack]) for attack in attacks
+    ]
+    rows = []
+    for label, values in groups:
+        count = len(values["PSNR_Y"])
+        if count == 0:
+            raise RuntimeError(f"No image pairs evaluated for {label}; check the test dataset.")
+        if any(len(values[key]) != count for key in metrics):
+            raise RuntimeError(f"Inconsistent metric counts for {label}.")
+        rows.append({"comparison": label, "images": count,
+                     **{key: float(np.mean(values[key])) for key in metrics}})
+
+    lines = [
+        "PSNR/SSIM: Y channel; RMSE/MAE: RGB, 0-255 scale.",
+        "Images are clipped to [0,1] and converted to uint8 before metrics.",
+        "Scores are computed per image and averaged; identical-image PSNR is capped at 100 dB.",
+        f"{'Comparison':<30} {'Images':>7} {'PSNR_Y(dB)':>12} {'SSIM_Y':>10} {'RMSE':>12} {'MAE':>12}",
+    ]
+    for row in rows:
+        lines.append(
+            f"{row['comparison']:<30} {row['images']:>7d} "
+            f"{row['PSNR_Y']:>12.6f} {row['SSIM_Y']:>10.6f} "
+            f"{row['RMSE']:>12.6f} {row['MAE']:>12.6f}"
+        )
+    report = "\n".join(lines) + "\n"
+    print("\n" + report)
+    with open("metrics_multidistortion.txt", "w", encoding="utf-8") as file:
+        file.write(report)
+    with open("metrics_multidistortion.csv", "w", newline="", encoding="utf-8-sig") as file:
+        writer = csv.DictWriter(file, fieldnames=["comparison", "images", *metrics])
+        writer.writeheader()
+        writer.writerows(rows)
+    print("Saved metrics_multidistortion.txt and metrics_multidistortion.csv")
 
 
 if __name__ == "__main__":
@@ -191,7 +231,7 @@ if __name__ == "__main__":
                     1
                 )
 
-                steg_attack, _ = apply_distortion(
+                steg_attack = apply_distortion(
                     steg_input,
                     attack
                 )
@@ -244,26 +284,4 @@ if __name__ == "__main__":
                     )
 
 
-    with open(
-        "metrics_multidistortion.txt",
-        "w",
-        encoding="utf-8"
-    ) as f:
-
-        f.write("========== Cover-Stego ==========\n")
-
-        for k, v in cover_steg.items():
-            f.write(f"{k}: {np.mean(v):.6f}\n")
-
-        for attack in attacks:
-
-            f.write(
-                f"\n========== Secret-Recovery-{attack} ==========\n"
-            )
-
-            for k, v in results[attack].items():
-                f.write(f"{k}: {np.mean(v):.6f}\n")
-
-
-    print("Finished.")
-    print("Saved metrics_multidistortion.txt")
+    save_and_print_metrics(cover_steg, results, attacks)

@@ -126,7 +126,7 @@ class SpatialAttention(nn.Module):
         scale = self.sigmoid(self.conv(pool_out))
         return x * scale
 
-class ALM(nn.Module):
+class ICM(nn.Module):
     """
     Deterministic Dual-Branch Information Compensation Module.
 
@@ -160,7 +160,7 @@ class ALM(nn.Module):
     """
 
     def __init__(self):
-        super(ALM, self).__init__()
+        super(ICM, self).__init__()
 
         # ================================================================
         # Part I: Extractor E

@@ -4,7 +4,7 @@ import torch.nn as nn
 
 import config as c
 from hinet import Hinet
-from invblock import ALM
+from invblock import ICM
 import modules.Unet_common as common
 
 
@@ -16,7 +16,7 @@ class Model_1(nn.Module):
 
         # Each stage owns an independent Hinet and an independent ALM.
         self.model = Hinet()
-        self.alm = ALM()
+        self.alm = ICM()
 
         self.iwt = common.IWT()
         self.dwt = common.DWT()
@@ -55,7 +55,7 @@ class Model_2(nn.Module):
 
         # Each stage owns an independent Hinet and an independent ALM.
         self.model = Hinet()
-        self.alm = ALM()
+        self.alm = ICM()
 
         self.iwt = common.IWT()
         self.dwt = common.DWT()
@@ -94,7 +94,7 @@ class Model_3(nn.Module):
 
         # Each stage owns an independent Hinet and an independent ALM.
         self.model = Hinet()
-        self.alm = ALM()
+        self.alm = ICM()
 
         self.iwt = common.IWT()
         self.dwt = common.DWT()
@@ -133,7 +133,7 @@ class Model_4(nn.Module):
 
         # Each stage owns an independent Hinet and an independent ALM.
         self.model = Hinet()
-        self.alm = ALM()
+        self.alm = ICM()
 
         self.iwt = common.IWT()
         self.dwt = common.DWT()
@@ -172,7 +172,7 @@ class Model_5(nn.Module):
 
         # Each stage owns an independent Hinet and an independent ALM.
         self.model = Hinet()
-        self.alm = ALM()
+        self.alm = ICM()
 
         self.iwt = common.IWT()
         self.dwt = common.DWT()

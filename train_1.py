@@ -96,7 +96,7 @@ def split_two(data):
 
 
 def apply_training_distortion(steg_img):
-    return apply_distortion(steg_img, random_select=True)
+    return apply_distortion(steg_img, random_select=True, differentiable=True)
 
 
 def format_duration(seconds):
@@ -274,7 +274,7 @@ if __name__ == "__main__":
                         output_steg_dwt = output_dwt.narrow(1, 0, 4 * c.channels_in)
                         output_steg = iwt(output_steg_dwt)
 
-                        distorted_steg = apply_training_distortion(output_steg)
+                        distorted_steg = apply_distortion(output_steg, random_select=True)
                         distorted_steg_dwt = dwt(distorted_steg)
 
                         rev_dwt = net(distorted_steg_dwt, rev=True)
